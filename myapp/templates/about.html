@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        text-align: center;
+        background-image: url('../../media/header.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
+
+    .about-container {
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        max-width: 1000px; /* Уменьшена ширина */
+        width: 90%; /* Уменьшена ширина */
+        text-align: left;
+        box-sizing: border-box;
+        margin-top: 50px; /* Отступ сверху */
+        margin-bottom: 50px; /* Отступ снизу */
+        margin-left: auto;
+        margin-right: auto; /* Центрирование блока */
+    }
+
+    .about-container h1 {
+        font-size: 40px;
+        color: #353434;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .info-section {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .info-section p {
+        font-size: 18px;
+        color: #333;
+        margin: 15px 0;
+        line-height: 1.6;
+    }
+
+    .info-section ul {
+        margin: 15px 0;
+        padding-left: 30px;
+    }
+
+    .info-section ul li {
+        font-size: 16px;
+        color: #555;
+        margin: 10px 0;
+        line-height: 1.6;
+    }
+
+    .home-link {
+        display: inline-block;
+        margin-top: 30px;
+        color: #1d5ea3;
+        text-decoration: none;
+        font-size: 16px;
+        transition: color 0.3s ease;
+    }
+
+    .home-link:hover {
+        color: #0a4a8a;
+    }
+
+    /* Адаптивность для маленьких экранов */
+    @media (max-width: 768px) {
+        .about-container {
+            padding: 20px;
+        }
+
+        .about-container h1 {
+            font-size: 32px;
+        }
+
+        .info-section {
+            padding: 15px;
+        }
+
+        .info-section p {
+            font-size: 16px;
+        }
+
+        .info-section ul li {
+            font-size: 14px;
+        }
+    }
+</style>
+
+<body>
+    <div class="about-container">
+        <h1>О нас</h1>
+        <div class="info-section">
+            <p><strong>Полное наименование:</strong> Государственное автономное учреждение дополнительного образования Иркутской области «Центр развития дополнительного образования детей»</p>
+            <p><strong>Место нахождения учреждения:</strong> 664007, г. Иркутск, ул. 1-я Красноказачья, дом 9</p>
+            <p><strong>График работы учреждения. Администрация:</strong></p>
+            <ul>
+                <li>Понедельник-пятница: 9:00-18:00, перерыв на обед: 13:00-14:00</li>
+                <li>Суббота-воскресенье: выходной</li>
+            </ul>
+            <p><strong>Режим образовательной деятельности:</strong> Понедельник-воскресенье: 8:00-20:00</p>
+            <p><strong>Контактный телефон учреждения:</strong></p>
+            <ul>
+                <li>8 (3952) 500-448 - приёмная</li>
+                <li>8 (3952) 53-68-09 - директор</li>
+            </ul>
+            <p><strong>Адрес электронной почты учреждения:</strong> detirk38@mail.ru</p>
+            <p><strong>Учредитель образовательного учреждения:</strong></p>
+            <ul>
+                <li>Министерство образования Иркутской области</li>
+                <li>Министр образования Иркутской области Парфёнов М.А.</li>
+                <li>Адрес: г. Иркутск, ул. Российская, д. 21</li>
+                <li>Телефон: 8 (3952) 33-13-33</li>
+                <li>E-mail: obraz38@edu.ru</li>
+            </ul>
+            <p><strong>Дата создания учреждения:</strong> 25 апреля 2012 года</p>
+            <p><strong>Места осуществления образовательной деятельности учреждения:</strong></p>
+            <ul>
+                <li>г. Иркутск, ул. Красноказачья, дом 9</li>
+                <li>г. Иркутск, ул. Лесная, дом 122</li>
+                <li>г. Иркутск, ул. Севастопольская, дом 214</li>
+                <li>Иркутский район, р.п. Листвянка, ул. Горького, дом 113</li>
+                <li>Шепеховский район, с. Большой Луг, пер. Сосновый, дом 8</li>
+                <li>г. Иркутск, ул. Сергеева, дом 5/6</li>
+                <li>г. Усолье – Сибирское, ул. Карла Либкнехта, зд. 58/1</li>
+            </ul>
+        </div>
+        <a href="{% url 'home' %}" class="home-link">На главную</a>
+    </div>
+</body>
+{% endblock %}

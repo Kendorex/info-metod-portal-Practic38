@@ -1,0 +1,490 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="action-buttons">
+    <div class="action-block" style="max-width: 1000px; margin-top: 70px;">
+        <h2>Поиск файлов</h2>
+        <form method="get" style="text-align: center;" id="search-form">
+            <!-- Поле поиска с иконкой лупы -->
+            <div class="inputlag">
+                <input type="text" name="q" placeholder="Поиск" value="{{ query|default:'' }}" style="width: 90%; padding: 10px 40px 10px 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 25px;">
+                <button type="submit" style="position: absolute; right: 30px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer;">
+                    <i class="fas fa-search" style="font-size: 16px; color: #9a4fb6;"></i>
+                </button>
+            </div>
+
+            <!-- Фильтр по направлениям и категориям в одну строку -->
+            <div style="display: flex; gap: 10px; width: 90%; margin: 0 auto 20px;">
+                <select name="direction" class="custom-select" style="flex: 1;">
+                    <option value="">Направленность</option>
+                    {% for direction in directions %}
+                        <option value="{{ direction }}" {% if selected_direction == direction %}selected{% endif %}>{{ direction }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="tag" class="custom-select" style="flex: 1;">
+                    <option value="">Формат</option>
+                    {% for tag in tags %}
+                        <option value="{{ tag }}" {% if selected_tag == tag %}selected{% endif %}>{{ tag }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+
+        <div class="file-list">
+            <ul>
+                {% for file in files %}
+                <li data-url="{% url 'file_detail' file.id %}" style="cursor: pointer;">
+                    <div class="file-info">
+                        <strong>{{ file.name }}</strong>
+                        <span>Формат: {{ file.tag }}</span>
+                        <span>Направленность: {{ file.direction }}</span>
+                        <span>Загрузил: {{ file.uploaded_by.username }}</span>
+                        <span>Рейтинг: {{ file.rating }}</span>
+                        <div class="rating-bar">
+                            <div class="rating-fill" style="width: {{ file.rating_percentage }}%; background-color: 
+                            {% if file.rating is not none %}
+                                {% if file.rating <= 3 %}#ff4444
+                                {% elif file.rating <= 7 %}#ffbb33
+                                {% else %}#00C851
+                                {% endif %}
+                            {% else %} #cccccc {% endif %};"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="file-actions">
+                        <a href="{% url 'download' file.id %}" class="btn-download">Скачать</a>
+                        {% if user.is_superuser or user == file.uploaded_by %}
+                        <a href="{% url 'delete_file' file.id %}" onclick="return confirm('Вы уверены, что хотите отозвать этот материал?'); event.stopPropagation();" class="btn-reject">Отозвать</a>
+                        {% endif %}
+                        
+                        <!-- Контейнер для значков, размещаем их под кнопками -->
+                        <div class="file-meta-icons">
+                            <span><i class="fas fa-download"></i> {{ file.download_count }}</span>
+                            <span><i class="fas fa-comment"></i> {{ file.comments.count }}</span>
+                        </div>
+                    </div>
+                </li>
+                {% empty %}
+                    <li>Файлы не найдены.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('search-form');
+        const selects = form.querySelectorAll('select');
+
+        // Отправка формы при изменении фильтров
+        selects.forEach(select => {
+            select.addEventListener('change', function() {
+                form.submit();
+            });
+        });
+
+        // Отправка формы при нажатии Enter в поле поиска
+        const searchInput = form.querySelector('input[name="q"]');
+        searchInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                form.submit();
+            }
+        });
+    });
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileItems = document.querySelectorAll('.file-list li[data-url]');
+        fileItems.forEach(function(item) {
+            item.addEventListener('click', function(event) {
+                // Проверяем, чтобы клик не был на кнопке "Отозвать" или "Скачать"
+                if (!event.target.closest('.file-actions a')) {
+                    window.location.href = item.getAttribute('data-url');
+                }
+            });
+        });
+    });
+</script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        text-align: center;
+        background-image: url('../../media/header.jpg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
+    
+    .rating-bar {
+        width: 100%;
+        height: 10px;
+        background-color: #e0e0e0;
+        border-radius: 5px;
+        margin: 5px 0;
+        overflow: hidden;
+    }
+
+    .rating-fill {
+        height: 100%;
+        border-radius: 5px;
+        transition: width 0.3s ease, background-color 0.3s ease;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        width: 100%;
+        max-width: 1200px;
+        margin: 20px auto;
+    }
+
+    .action-block {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        width: 100%;
+        max-width: 600px;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .action-block:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+    .file-info-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+    .action-block h2 {
+        font-size: 24px;
+        color: #7f1da3;
+        margin-bottom: 10px;
+    }
+
+    .action-block p {
+        font-size: 16px;
+        color: #555;
+    }
+
+    /* Стили для списка файлов */
+    .file-list {
+        max-width: 90%;
+        margin: 0 auto;
+    }
+
+    .file-list ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .file-list li {
+        font-size: 18px;
+        color: #555;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .file-info {
+    position: relative;
+    flex-grow: 1;
+    margin-right: 20px;
+    text-align: left;
+}
+
+.file-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.file-tag {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.file-direction {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.file-rating {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+.file-uploader {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+.file-downloads {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.file-comments {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-style: italic;
+    color: #555;
+}
+
+    /* Стили для кнопок */
+    .file-actions {
+    display: flex;
+    flex-direction: column; /* Изменим на колонку, чтобы значки шли ниже кнопок */
+    gap: 10px;
+    align-items: center;
+    }
+
+    .file-meta-icons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .file-meta-icons span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-download, .btn-reject {
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-weight: 700;
+        text-decoration: none;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .btn-download {
+        background-color: #7f1da3;
+    }
+
+    .btn-download:hover {
+        background-color: #7f1da3;
+    }
+
+    .btn-reject {
+        background-color: #dc3545;
+    }
+
+    .btn-reject:hover {
+        background-color: #a71d2a;
+    }
+    .file-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.file-list li {
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.file-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.file-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.file-comments {
+    margin-top: 10px;
+    font-style: italic;
+    color: #555;
+}
+
+.file-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-download, .btn-reject {
+    padding: 5px 10px;
+    text-decoration: none;
+    border-radius: 3px;
+    font-size: 14px;
+}
+
+.btn-download {
+    background-color: #7f1da3;
+    color: white;
+}
+
+.btn-reject {
+    background-color: #f44336;
+    color: white;
+}
+
+.file-meta-icons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.file-meta-icons span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    color: #555;
+}
+    /* Стили для выпадающих списков */
+    .custom-select {
+        width: 90%;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 15px;
+        background-color: #fff;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231d5ea3%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 12px;
+        cursor: pointer;
+    }
+
+    .custom-select:focus {
+        border-color: #855bbb;
+        outline: none;
+    }
+    .inputlag{
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        position: relative; 
+        width: 95%; 
+        margin: 0 auto 20px;
+    }
+    .comments {
+    margin-top: 20px;
+    }
+
+    .comment {
+        border-top: 1px solid #ddd;
+        padding: 10px 0;
+    }
+
+    .btn-comment {
+        background-color: #28a745;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 5px;
+        text-decoration: none;
+        margin-left: 10px;
+    }
+
+    .btn-comment:hover {
+        background-color: #218838;
+    }
+
+    .btn-delete-comment {
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        text-decoration: none;
+        margin-left: 10px;
+    }
+
+    .btn-delete-comment:hover {
+        background-color: #c82333;
+    }
+    /* Медиазапросы для мобильных устройств */
+    @media (max-width: 768px) {
+
+    .inputlag{
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        position: relative; 
+        width: 85%; 
+        margin: 0 auto 20px;
+    }
+        .action-buttons {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .action-block {
+            max-width: 60%; /* Уменьшена максимальная ширина для мобильных устройств */
+            padding: 12px; /* Уменьшен padding для мобильных устройств */}
+
+        .file-list {
+            max-width: 90%;
+        }
+
+        .file-list li {
+            font-size: 16px;
+            padding: 12px;
+        }
+
+        .file-info span {
+            font-size: 12px;
+        }
+
+        .btn-download, .btn-reject {
+            font-size: 14px;
+            padding: 6px 10px;
+        }
+
+
+        /* Уменьшаем ширину формы и полей */
+        .action-block form {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .custom-select {
+            width: 100%; /* Сделаем выпадающие списки по ширине экрана */
+        }
+
+        /* Добавляем отступ сверху для поля поиска, чтобы оно не перекрывало меню */
+        #search-form {
+            margin-top: 20px; /* Отступ сверху для формы поиска */
+        }
+    }
+</style>
+
+{% endblock %}

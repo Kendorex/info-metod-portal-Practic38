@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            text-align: center;
+            background-image: url('../../media/header.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #fff;
+        }
+
+        .upload-container {
+            background-color: rgba(0, 0, 0, 0.6); /* Темный полупрозрачный фон */
+            padding: 20px;
+            margin-top: 60px; /* Увеличенный отступ сверху */
+            border-radius: 10px;
+            width: 100%;
+            max-width: 800px;
+            margin: 85px auto 60px; /* Отступ сверху 100px, снизу 60px */
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .drop-zone {
+            border: 2px dashed #1d5ea3;
+            border-radius: 10px;
+            padding: 30px;
+            background-color: #f9f9f9;
+            color: #1d5ea3;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .drop-zone.dragging {
+            background-color: #e0f0ff;
+            border-color: #0a4a8a;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 12px 25px;
+            background-color: #1d5ea3;
+            color: #fff;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .file-label:hover {
+            background-color: #0a4a8a;
+            transform: translateY(-2px);
+        }
+
+        .tag-input,
+        .direction-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            background-color: #fff;
+            cursor: pointer;
+            margin-top: 3px;
+            transition: border-color 0.3s ease;
+        }
+
+        .tag-input:focus,
+        .direction-input:focus {
+            border-color: #1d5ea3;
+            outline: none;
+        }
+
+        .upload-button {
+            padding: 12px 25px;
+            background-color: #1d5ea3;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .upload-button:hover {
+            background-color: #0a4a8a;
+            transform: translateY(-2px);
+        }
+
+        .file-list {
+            width: 100%;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        .file-list ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .file-list li {
+            font-size: 16px;
+            color: #afadad;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .clear-button {
+            margin-top: 7px;
+            padding: 8px 15px;
+            background-color: #ff4d4d;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .clear-button:hover {
+            background-color: #cc0000;
+        }
+
+        .home-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #1d5ea3;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        .home-link:hover {
+            color: #0a4a8a;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            font-size: 18px;
+            color: #fff;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 768px) {
+            .upload-container {
+                background-color: rgba(0, 0, 0, 0.6); /* Темный полупрозрачный фон */
+                padding: 15px;
+                margin-top: 60px; /* Увеличенный отступ сверху */
+                border-radius: 10px;
+                width: 90%; /* Сделать контейнер чуть уже */
+                max-width: 600px; /* Уменьшить max-width */
+                margin: 50px auto 30px; /* Уменьшенные отступы на мобильных устройствах */
+            }
+
+            h1 {
+                font-size: 26px; /* Уменьшение размера заголовка */
+                margin-bottom: 20px;
+            }
+
+            .upload-form {
+                padding: 0 10px;
+            }
+
+            .drop-zone {
+                padding: 15px;
+                font-size: 14px; /* Уменьшение шрифта */
+                min-height: 80px;
+            }
+
+            .file-label {
+                font-size: 16px;
+                padding: 10px 20px;
+            }
+
+            .upload-button {
+                font-size: 16px;
+                padding: 10px 20px;
+            }
+
+            .file-list li {
+                font-size: 14px;
+            }
+
+            .clear-button {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+
+            .form-group label {
+                font-size: 16px;
+            }
+
+            .tag-input,
+            .direction-input {
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+    </style>
+
+    <div class="upload-container">
+        <h1>Загрузка файлов</h1>
+        <form method="post" enctype="multipart/form-data" class="upload-form">
+            {% csrf_token %}
+            {{ form.file.errors }}
+            <div class="drop-zone" id="drop-zone">
+                <p id="drop-text">Перетащите файлы сюда или</p>
+                <input type="file" name="file" id="file-input" class="file-input" multiple>
+                <label for="file-input" class="file-label">Выберите файлы</label>
+                <div class="file-list" id="file-list">
+                    <ul id="file-names"></ul>
+                </div>
+                <button type="button" class="clear-button" id="clear-button">Очистить</button>
+            </div>
+
+            <div class="form-group">
+                <label for="id_tag">Выберите формат:</label>
+                {{ form.tag }}
+                {{ form.tag.errors }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_direction">Выберите направленность:</label>
+                {{ form.direction }}
+                {{ form.direction.errors }}
+            </div>
+
+            <button type="submit" class="upload-button">Загрузить</button>
+        </form>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const fileNamesList = document.getElementById('file-names');
+        const dropText = document.getElementById('drop-text');
+        const clearButton = document.getElementById('clear-button');
+
+        function updateFileList(files) {
+            fileNamesList.innerHTML = '';
+
+            if (files.length > 0) {
+                dropText.style.display = 'none';
+                for (const file of files) {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = file.name;
+                    fileNamesList.appendChild(listItem);
+                }
+            } else {
+                dropText.style.display = 'block';
+            }
+        }
+
+        fileInput.addEventListener('change', (e) => {
+            const files = e.target.files;
+            updateFileList(files);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragging');
+            const files = e.dataTransfer.files;
+            fileInput.files = files;
+            updateFileList(files);
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragging');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragging');
+        });
+
+        clearButton.addEventListener('click', () => {
+            fileInput.value = '';
+            fileNamesList.innerHTML = '';
+            dropText.style.display = 'block';
+        });
+    </script>
+{% endblock %}

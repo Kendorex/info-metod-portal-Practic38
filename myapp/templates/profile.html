@@ -1,0 +1,442 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="action-buttons">
+    <div class="action-block" style="max-width: 700px;">
+        <h2>Профиль пользователя</h2>
+        <div class="profile-info">
+            <p><strong>Имя пользователя:</strong> {{ user.username }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            {% if user.profile %}
+                <p><strong>Телефон:</strong> {{ user.profile.phone }}</p>
+                <p><strong>Должность:</strong> {{ user.profile.position }}</p>
+                <p>
+                    <a href="#" id="editProfileBtn" class="edit-btn">✏️ Редактировать профиль</a>
+                </p>
+                {% if user.profile.avatar %}
+                    <img src="{{ user.profile.avatar.url }}" alt="Аватар" class="avatar">
+                {% endif %}
+            {% else %}
+                <p>Профиль не найден.</p>
+            {% endif %}
+        </div>
+        <div class="profile-actions">
+            <a href="{% url 'logout' %}" class="btn">Выйти</a>
+            <a href="{% url 'home' %}" class="btn">На главную</a>
+        </div>
+
+        <div class="file-history">
+            <h3>История загруженных материалов</h3>
+            <div class="file-status">
+                <h4>На рассмотрении</h4>
+                {% if files_pending %}
+                    <ul>
+                        {% for file in files_pending %}
+                            <li>
+                                <span>{{ file.name }}</span>
+                                <span>Загружен: {{ file.uploaded_at|date:"d.m.Y H:i" }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>Нет материалов на рассмотрении.</p>
+                {% endif %}
+            </div>
+
+            <div class="file-status">
+                <h4>Опубликованные материалы</h4>
+                {% if files_approved %}
+                    <ul>
+                        {% for file in files_approved %}
+                            <li>
+                                <span>{{ file.name }}</span>
+                                <span>Одобрен: {{ file.approved_at|date:"d.m.Y H:i" }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>Нет одобренных файлов.</p>
+                {% endif %}
+            </div>
+
+            <div class="file-status">
+                <h4>Отклоненные файлы</h4>
+                {% if files_rejected %}
+                    <ul>
+                        {% for file in files_rejected %}
+                            <li>
+                                <span>{{ file.name }}</span>
+                                <span>Отклонен: {{ file.rejected_at|date:"d.m.Y H:i" }}</span>
+                                {% if file.rejection_reason %}
+                                    <div class="rejection-reason">
+                                        <strong>Причина отклонения:</strong> {{ file.rejection_reason }}
+                                    </div>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>Нет отклоненных файлов.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="editProfileModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Редактировать профиль</h3>
+        <form method="POST" id="profileEditForm">
+            {% csrf_token %}
+            <label for="username">Имя пользователя:</label>
+            <input type="text" id="username" name="username" value="{{ user.username }}" required>
+            
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ user.email }}" required>
+            
+            <label for="phone">Телефон:</label>
+            <input type="text" id="phone" name="phone" value="{{ user.profile.phone }}" required>
+            
+            <label for="position">Должность:</label>
+            <input type="text" id="position" name="position" value="{{ user.profile.position }}" required>
+            
+            <button type="submit" class="btn">Сохранить изменения</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        text-align: center;
+        background-image: url('../../media/header.jpg'); 
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
+
+    .logo-and-text {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .logo {
+        width: 100px;
+        height: auto;
+    }
+
+    .text-content {
+        text-align: left;
+    }
+
+    .small-text {
+        font-size: 20px;
+        color: #000;
+        font-weight: 700;
+        margin: 5px 0;
+    }
+
+    .header-section {
+        text-align: center;
+    }
+
+    .header-section h1 {
+        font-size: 56px;
+        color: #353434;
+        font-weight: 900;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+    }
+
+    .header-section p {
+        font-size: 28px;
+        color: #000;
+        font-weight: 700;
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100vh;
+        margin: 0 auto;
+    }
+
+    .action-block {
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 700px;
+    margin: 80px auto 20px; /* Отступы сверху и снизу */
+}
+
+
+    .action-block h2 {
+        font-size: 24px;
+        color: #753f96;
+        margin-bottom: 10px;
+    }
+
+    .action-block p {
+        font-size: 16px;
+        color: #555;
+    }
+
+    footer {
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        padding: 10px 0;
+        width: 100%;
+        position: fixed;
+        bottom: 0;
+    }
+
+    .profile-info {
+        text-align: left;
+        margin-bottom: 20px;
+    }
+
+    .profile-info p {
+        margin: 10px 0;
+    }
+
+    .profile-info strong {
+        color: #6a1b9a;
+    }
+
+    .avatar {
+        width: 100px;
+        height: auto;
+        border-radius: 50%;
+        margin-top: 10px;
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .btn {
+        background-color: #754195;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        text-decoration: none;
+    }
+
+    .btn:hover {
+        background-color: #7844b0;
+    }
+
+    .file-history {
+        margin-top: 20px;
+    }
+
+    .file-status {
+        margin-bottom: 20px;
+    }
+
+    .file-status h4 {
+        color: #7937a2;
+        margin-bottom: 10px;
+    }
+
+    .file-status ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+    .file-status li {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+    }
+
+    .file-status li:last-child {
+        border-bottom: none;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 10px;
+        width: 50%;
+    }
+
+    .close {
+        color: #aaa;
+        font-size: 28px;
+        font-weight: bold;
+        position: absolute;
+        top: 5px;
+        right: 20px;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .edit-btn {
+        cursor: pointer;
+        color: #6a1b9a;
+    }
+
+    .edit-btn:hover {
+        text-decoration: underline;
+    }
+
+    .modal-content button[type="submit"] {
+        background-color: #6a1b9a;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .modal-content button[type="submit"]:hover {
+        background-color: #4e148c;
+    }
+
+    .modal-content label {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    /* Адаптивность для мобильных устройств */
+    @media (max-width: 768px) {
+        .action-block {
+            width: 90%;
+            padding: 15px;
+            margin-top: 160px;
+        }
+
+        .modal-content {
+            width: 80%;
+            padding: 15px;
+        }
+
+        .avatar {
+            width: 80px;
+        }
+
+        .file-status li {
+            font-size: 14px;
+        }
+
+        .file-status h4 {
+            font-size: 18px;
+        }
+
+        .btn {
+            font-size: 14px;
+            padding: 8px 16px;
+        }
+
+        .profile-actions {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .profile-info p {
+            font-size: 14px;
+        }
+
+        .action-block h2 {
+            font-size: 22px;
+        }
+        .file-status span {
+        display:contents
+    }
+
+    }
+
+    
+</style>
+
+<script>
+    var modal = document.getElementById("editProfileModal");
+    var btn = document.getElementById("editProfileBtn");
+    var span = document.getElementsByClassName("close")[0];
+
+    btn.onclick = function(event) {
+        event.preventDefault();
+        modal.style.display = "block";
+    }
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    document.getElementById("profileEditForm").onsubmit = function(event) {
+        event.preventDefault();
+
+        var formData = new FormData(this);
+
+        fetch("{% url 'edit_profile' %}", {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.querySelector(".profile-info p:nth-child(1)").textContent = 'Имя пользователя: ' + data.username;
+                document.querySelector(".profile-info p:nth-child(2)").textContent = 'Email: ' + data.email;
+                document.querySelector(".profile-info p:nth-child(3)").textContent = 'Телефон: ' + data.phone;
+                document.querySelector(".profile-info p:nth-child(4)").textContent = 'Должность: ' + data.position;
+
+                modal.style.display = "none";
+            } else {
+                alert("Ошибка при сохранении изменений");
+            }
+        });
+    };
+</script>
+
+{% endblock %}

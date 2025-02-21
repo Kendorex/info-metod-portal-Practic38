@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="file-detail action-block">
+    <h2>{{ file.name }}</h2>
+    <div class="file-info">
+        <p><strong>Категория:</strong> {{ file.tag }}</p>
+        <p><strong>Направление:</strong> {{ file.direction }}</p>
+        <p><strong>Рейтинг:</strong> {{ file.rating }}</p>
+        <p><strong>Загрузил:</strong> {{ file.uploaded_by.username }}</p>
+        <p><strong>Скачиваний:</strong> {{ file.download_count }}</p>
+    </div>
+    <div class="file-actions profile-actions">
+        <a href="{% url 'download' file.id %}" class="btn btn-download">Скачать</a>
+        {% if user.is_superuser or user == file.uploaded_by %}
+            <a href="{% url 'delete_file' file.id %}" onclick="return confirm('Вы уверены, что хотите отозвать этот материал?');" class="btn btn-reject">Отозвать</a>
+        {% endif %}
+    </div>
+    <div class="comments">
+        <h3>Комментарии:</h3>
+        {% for comment in comments %}
+            <div class="comment">
+                <p>{{ comment.text }}</p>
+                <div class="comment-meta">
+                    <small>Автор: {{ comment.author.username }}, {{ comment.created_at }}</small>
+                    {% if user == comment.author or user.profile.examiner %}
+                        <a href="{% url 'delete_comment' comment.id %}" class="btn btn-delete-comment">Удалить</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% empty %}
+            <p>Комментариев пока нет.</p>
+        {% endfor %}
+    </div>
+    <!-- Кнопка "Комментировать" и форма для комментария -->
+    {% if user.is_authenticated %}
+    <div class="comment-section">
+        <div id="comment-form">
+            <form method="post" action="{% url 'add_comment' file.id %}">
+                {% csrf_token %}
+                <textarea name="text" rows="3" placeholder="Введите ваш комментарий..." required></textarea>
+                <button type="submit" class="btn btn-comment">Отправить</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        background-image: url('../../media/header.jpg'); 
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
+    .file-detail {
+        max-width: 800px;
+        margin: 73px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .file-info {
+        margin-bottom: 20px;
+    }
+
+    .file-info p {
+        margin: 5px 0;
+    }
+
+    .file-actions {
+        margin-bottom: 20px;
+    }
+
+    .btn {
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-weight: 700;
+        text-decoration: none;
+        color: #fff;
+        cursor: pointer;
+        margin-right: 10px;
+    }
+
+    .btn-download {
+        background-color: #7f1da3;
+    }
+
+    .btn-download:hover {
+        background-color: #6a177d;
+    }
+
+    .btn-reject {
+        background-color: #dc3545;
+    }
+
+    .btn-reject:hover {
+        background-color: #a71d2a;
+    }
+
+    .btn-comment {
+        background-color: #7f1da3;
+    }
+
+    .btn-comment:hover {
+        background-color: #7f1da3;
+    }
+
+    .comments {
+        margin-top: 20px;
+    }
+
+    .comment {
+        border-top: 1px solid #ddd;
+        padding: 10px 0;
+    }
+
+    .comment p {
+        margin: 5px 0;
+        word-wrap: break-word; /* Перенос длинных слов */
+    }
+
+    .comment-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+    }
+
+    .comment small {
+        color: #555;
+    }
+
+    .btn-delete-comment {
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        text-decoration: none;
+        margin-left: 10px;
+    }
+
+    .btn-delete-comment:hover {
+        background-color: #c82333;
+    }
+
+    .comment-section {
+        margin-top: 20px;
+    }
+
+    #comment-form {
+        margin-top: 10px;
+    }
+
+    #comment-form textarea {
+        width: 95%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+    }
+
+    /* Адаптивность для мобильных устройств */
+    @media (max-width: 768px) {
+    .file-detail {
+        max-width: 800px;
+        margin: 80px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+        font-size: 1.5rem; /* Уменьшим размер заголовка */
+        word-wrap: break-word; /* Переносим длинные слова */
+        overflow-wrap: break-word; /* Для поддержки в старых браузерах */
+    }
+
+    .file-info p {
+        font-size: 14px;
+        word-wrap: break-word; /* Переносим длинные слова в информации о файле */
+    }
+
+    .btn {
+        font-size: 14px;
+        padding: 8px 16px;
+        margin-right: 5px;
+        display: block; /* Кнопки будут отображаться друг под другом */
+        width: 100%; /* Кнопки занимают всю ширину */
+        margin-bottom: 10px; /* Отступ между кнопками */
+    }
+
+    .comments h3 {
+        font-size: 18px;
+    }
+
+    .comment p {
+        font-size: 14px;
+    }
+
+    .comment small {
+        font-size: 12px;
+    }
+
+    .comment-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-delete-comment {
+        margin-left: 0;
+        margin-top: 5px;
+        width: 20%
+    }
+    .btn-download {
+        background-color: #7f1da3;
+        width: 19%
+    }
+
+    #comment-form textarea {
+        width: 90%; /* Форма комментария занимает всю ширину */
+    }
+}
+</style>
+
+{% endblock %}

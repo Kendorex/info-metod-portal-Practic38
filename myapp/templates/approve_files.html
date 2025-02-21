@@ -1,0 +1,408 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="action-buttons">
+    <div class="action-block">
+        <h2>Файлы для одобрения</h2>
+        <div class="file-list">
+            <ul>
+                {% for file in files %}
+                <li>
+                    <span>
+                        {{ file.name }} 
+                        (Тег: {{ file.tag }}, 
+                        Направление: <span class="direction">{{ file.direction }}</span>, 
+                        Загрузил: {{ file.uploaded_by.username }})
+                    </span>
+                    <div class="file-actions">
+                        <a href="{% url 'download' file.id %}" class="btn-download">Скачать</a>
+                        <a href="#" class="btn-approve" data-toggle="modal" data-target="#approveModal{{ file.id }}">Одобрить</a>
+                        <a href="#" class="btn-reject" data-toggle="modal" data-target="#rejectModal{{ file.id }}">Отклонить</a>
+                        <a href="#" class="btn-user-info" data-toggle="modal" data-target="#userInfoModal{{ file.id }}">Информация о пользователе</a>
+                    </div>
+                </li>
+                <!-- Модальное окно для информации о пользователе -->
+<div class="modal fade" id="userInfoModal{{ file.id }}" tabindex="-1" role="dialog" aria-labelledby="userInfoModalLabel{{ file.id }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userInfoModalLabel{{ file.id }}">Информация о пользователе</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Имя пользователя:</strong> {{ file.uploaded_by.username }}</p>
+                <p><strong>Email:</strong> {{ file.uploaded_by.email }}</p>
+                <p><strong>Должность:</strong> {{ file.uploaded_by.profile.position }}</p>
+                <p><strong>Телефон:</strong> {{ file.uploaded_by.profile.phone }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для подтверждения одобрения с рейтингом -->
+<div class="modal fade" id="approveModal{{ file.id }}" tabindex="-1" role="dialog" aria-labelledby="approveModalLabel{{ file.id }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="approveModalLabel{{ file.id }}">Подтверждение одобрения</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите одобрить файл <strong>{{ file.name }}</strong>?</p>
+                <form method="post" action="{% url 'approve_file' file.id %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="rating{{ file.id }}">Рейтинг (от 1 до 100):</label>
+                        <input type="number" id="rating{{ file.id }}" name="rating" class="form-control" min="1" max="100" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-success">Одобрить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Модальное окно для отклонения (уже есть в вашем коде) -->
+    <div class="modal fade" id="rejectModal{{ file.id }}" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel{{ file.id }}" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectModalLabel{{ file.id }}">Причина отклонения</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{% url 'reject_file' file.id %}">
+                        {% csrf_token %}
+                        <textarea name="rejection_reason" class="form-control" rows="3" placeholder="Укажите причину отклонения"></textarea>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                            <button type="submit" class="btn btn-danger">Отклонить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% empty %}
+    <li>Нет файлов для одобрения.</li>
+{% endfor %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<style>
+            body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            text-align: center;
+            background-image: url('../../media/header.jpg'); /* Путь к вашему изображению */
+            background-size: cover; /* Автомасштабирование */
+            background-position: center; /* Центрирование */
+            background-attachment: fixed; /* Фон будет фиксированным при прокрутке */
+        }
+
+        .gray-section {
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px;
+        }
+    .logo {
+        width: 100px;
+        height: auto;
+    }
+
+    .text-content {
+        text-align: left;
+    }
+
+    .small-text {
+        font-size: 20px;
+        color: #000;
+        font-weight: 700;
+        margin: 5px 0;
+    }
+
+    .header-section {
+        text-align: center;
+    }
+
+    .header-section h1 {
+        font-size: 56px;
+        color: #353434;
+        font-weight: 900;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+    }
+
+    .header-section p {
+        font-size: 28px;
+        color: #000;
+        font-weight: 700;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        width: 100%;
+        max-width: 1200px;
+        margin: 20px auto; /* Уменьшенный отступ сверху */
+    }
+
+    .action-block {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 1200px;
+    height: 80vh; /* Ограничиваем высоту блока */
+    overflow-y: auto; /* Добавляем вертикальную прокрутку */
+    margin: 100px auto; /* Опускаем блок ниже */
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    transform: translateY(-5px);
+}
+
+    /* Убираем эффекты при наведении */
+    .action-block:hover {
+        transform: translateY(-5px); /* Оставляем смещение */
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Оставляем тень */
+    }
+
+    .action-block h2 {
+        font-size: 24px;
+        color: #1d5ea3;
+        margin-bottom: 10px;
+    }
+
+    .action-block p {
+        font-size: 16px;
+        color: #555;
+    }
+
+    footer {
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        padding: 10px 0;
+        width: 100%;
+        position: fixed;
+        bottom: 0;
+    }
+
+    nav {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+
+    nav a {
+        color: #000;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    nav a:hover {
+        text-decoration: underline;
+    }
+
+    nav span {
+        font-size: 16px;
+        color: #000;
+        font-weight: 700;
+    }
+
+    /* Стили для списка файлов */
+    .file-list {
+        max-width: 90%; /* Уменьшаем ширину */
+        margin: 0 auto; /* Выравниваем по центру */
+    }
+
+    .file-list ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .file-list li {
+        font-size: 18px;
+        color: #555;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .file-list li:last-child {
+        border-bottom: none;
+    }
+
+    .file-actions {
+        display: flex;
+        gap: 10px; /* Отступы между кнопками */
+    }
+
+    .file-actions a {
+        text-decoration: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-weight: 700;
+    }
+
+    .btn-download {
+        background-color: #1d5ea3;
+        color: #fff;
+    }
+
+    .btn-approve {
+        background-color: #28a745;
+        color: #fff;
+    }
+
+    .btn-reject {
+        background-color: #dc3545;
+        color: #fff;
+    }
+
+    .file-actions a:hover {
+        opacity: 0.9;
+    }
+
+    /* Стили для направления */
+    .direction {
+        color: #1d5ea3; /* Синий цвет для направления */
+        font-weight: bold;
+    }
+    .modal-content {
+    border-radius: 10px;
+}
+
+.modal-header {
+    background-color: #1d5ea3;
+    color: #fff;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.modal-title {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    border-top: 1px solid #eee;
+    padding: 15px;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border: none;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+}
+.modal-backdrop {
+    position: static;
+    top: 0;
+    left: 0;
+    z-index: 1040;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+}
+.btn-user-info {
+    background-color: #17a2b8; /* Цвет для кнопки информации о пользователе */
+    color: #fff;
+}
+
+.btn-user-info:hover {
+    opacity: 0.9;
+}
+@media (max-width: 480px) {
+        .action-block h2 {
+            font-size: 20px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+        }
+
+        .btn-download, .btn-approve, .btn-reject, .btn-user-info {
+            padding: 10px;
+        }
+
+        .file-actions a {
+            font-size: 14px;
+        }
+
+        .file-list li {
+            font-size: 14px;
+        }
+    }
+
+    footer {
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        padding: 10px 0;
+        width: 100%;
+        position: fixed;
+        bottom: 0;
+    }
+
+    nav {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+
+    nav a {
+        color: #000;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    nav a:hover {
+        text-decoration: underline;
+    }
+
+    nav span {
+        font-size: 16px;
+        color: #000;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}

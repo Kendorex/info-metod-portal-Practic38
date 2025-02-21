@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Sharing</title>
+</head>
+<body>
+    <style>
+        /* Стили для навигации */
+        nav {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: linear-gradient(135deg, #945bd1, #cc63cc);
+            padding: 10px 20px;
+            border-radius: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000; /* Обеспечиваем, чтобы навигация была всегда поверх */
+        }
+    
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+    
+        nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+    
+        nav span {
+            font-size: 16px;
+            color: #fff;
+            font-weight: 700;
+        }
+        .menu-toggle {
+            display: none;
+        }
+    
+        /* Медиа-запросы для адаптации на мобильных устройствах */
+        @media (max-width: 768px) {
+            nav {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                gap: 10px;
+                padding: 10px 15px;
+                border-radius: 15px;
+                z-index: 1000; /* Закрепляем навигацию поверх всего */
+            }
+    
+            nav a {
+                font-size: 14px;
+            }
+    
+            nav span {
+                font-size: 14px;
+            }
+    
+            .menu-toggle {
+                display: block;
+                background-color: #945bd1;
+                border: none;
+                color: #fff;
+                font-size: 16px; /* Уменьшаем размер кнопки меню */
+                padding: 6px 12px; /* Уменьшаем отступы */
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+    
+            .menu-toggle:hover {
+                background-color: #cc63cc;
+            }
+    
+            /* Скрываем меню по умолчанию */
+            .nav-links {
+                display: none;
+                width: 100%;
+                text-align: center;
+                z-index: 999; /* Ставим меню поверх контента, но под основной навигацией */
+            }
+    
+            /* Показываем меню, когда оно активировано */
+            .nav-links.active {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                background-color: #945bd1;
+                border-radius: 10px;
+                padding: 10px;
+                width: 100%;
+            }
+    
+            .nav-links a {
+                font-size: 18px;
+            }
+    
+            /* Скрываем кнопку меню для ПК */
+            @media (min-width: 769px) {
+                .menu-toggle {
+                    display: none;
+                }
+            }
+        }
+    </style>
+
+    <header>
+        <nav>
+            {% if user.is_authenticated %}
+                <span>{{ user.username }}!</span>
+                <button class="menu-toggle" onclick="toggleMenu()">Меню</button>
+                <div class="nav-links">
+                    <a href="{% url 'home' %}">На главную</a>
+                    <a href="{% url 'profile' %}">Профиль</a>
+                    <a href="{% url 'search' %}">Поиск</a>
+                    <a href="{% url 'upload' %}">Загрузить</a>
+                    {% if user.profile.examiner %}
+                        <a href="{% url 'approve_files' %}">Одобрение файлов</a>
+                    {% endif %}
+                    <a href="{% url 'about' %}">О нас</a>
+                    <a href="{% url 'logout' %}">Выйти</a>
+                </div>
+            {% else %}
+                <a href="{% url 'login' %}" class="login-link">Войти</a>
+                <button class="menu-toggle" onclick="toggleMenu()">Меню</button>
+                <div class="nav-links">
+                    <a href="{% url 'home' %}">На главную</a>
+                    <a href="{% url 'register' %}">Регистрация</a>
+                    <a href="{% url 'about' %}">О нас</a>
+                </div>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <script>
+        // Функция для переключения состояния меню
+        function toggleMenu() {
+            const menu = document.querySelector('.nav-links');
+            menu.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
